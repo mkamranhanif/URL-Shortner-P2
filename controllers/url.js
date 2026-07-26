@@ -11,8 +11,9 @@ async function handleGenerateShortUrl(req, res) {
     shortId: shortId,
     redirectURL: body.url,
     visitHistory: [],
+    createdBy: req.user._id,
   })
-  const allUrls = await URL.find({}) //gets all the entries in the DB
+  const allUrls = await URL.find({ createdBy: req.user._id }) //gets all the entries in the DB
   return res.render("home", {
     id: shortId,
     urls: allUrls,
