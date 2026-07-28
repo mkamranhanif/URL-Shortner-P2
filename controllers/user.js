@@ -4,14 +4,15 @@ const User = require("../models/user")
 const { setUser } = require("../service/auth")
 
 async function handleUserCreation(req, res) {
-  const { name, email, password } = await req.body
-  if (!req.body) return console.log("user info is required")
-  User.create({
+  const { name, email, password } = req.body
+  if (!req.body) return res.render("signup", { error: "user info is required" })
+  await User.create({
     name,
     email,
     password,
+    role: "NORMAL",
   })
-  res.redirect("/")
+  return res.redirect("/login")
 }
 
 async function handleUserLogin(req, res) {
@@ -22,9 +23,8 @@ async function handleUserLogin(req, res) {
       error: "invalid email or password",
     })
 
-  const sessionId = uuidv4()
-  setUser(sessionId, userLogin)
-  res.cookie("uid", sessionId)
+  const token = setUser(userLogin)
+  res.cookie("uid", token)
   res.redirect("/")
 }
 

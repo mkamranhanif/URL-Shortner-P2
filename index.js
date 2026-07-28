@@ -1,12 +1,12 @@
 const express = require("express") // import the express
 const urlRouter = require("./routes/url") //Routes to short link generator method
 const { connectMongosDB } = require("./connection") // mongoDB connection
-const staticRoute = require("./routes/staticROutes") //routes to the method which executes the views (EJS)
+const staticRoute = require("./routes/staticRoutes") //routes to the method which executes the views (EJS)
 const path = require("path") //used to give a path of the view
 const { handleGetById, handleDataView } = require("./controllers/url") //imports the methods for get routes
 const createUser = require("./routes/user")
 const cookieParser = require("cookie-parser")
-const { restrictToLoggedinUserOnly, checkAuth } = require("./middleware/auth")
+const { checkForAuthentication, restrictTo } = require("./middleware/auth")
 
 //starting the server/app on port 8001 using express
 const app = express()
@@ -16,6 +16,7 @@ const PORT = 8001
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
+app.use(checkForAuthentication)
 
 //setting the EJS as view engine
 app.set("view engine", "ejs")
@@ -30,12 +31,12 @@ connectMongosDB("mongodb://127.0.0.1:27017/urlShortner")
 
 //PART 2:
 //for static routes to execute ejs file
-app.use("/", checkAuth, staticRoute)
+app.use("/", staticRoute)
 
 app.use("/", createUser)
 
 //directs to the post method to generate short links
-app.use("/", urlRouter)
+app.use("/", restrictTo(["NORMAL"]), urlRouter)
 
 //PART 1:
 //get the analytics of specific short link
